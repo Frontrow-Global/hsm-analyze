@@ -49,8 +49,7 @@ std::string getAttributesForTransition(TransitionType TransType) {
     assert(false);
   }
 
-  std::string Result = FormatString<>(
-      R"(style="%s", weight="%d", color="%s")", Style, Weight, Color);
+  std::string Result = std::string(FormatString<>(R"(style="%s", weight="%d", color="%s")", Style.c_str(), Weight, Color.c_str()));
   return Result;
 }
 
@@ -247,40 +246,43 @@ std::string generateDotFileContents(const StateTransitionMap &Map,
 
   // Write the dot file header
   std::string Result =
-      FormatString<>("strict digraph G {\n"
+    std::string(FormatString<>("strict digraph G {\n"
                      "  fontname=Helvetica;\n"
                      "  nodesep=0.6;\n"
                      "  %s\n"
                      "",
-                     Options.LeftRightOrdering ? "rankdir=LR" : "");
+			       Options.LeftRightOrdering ? "rankdir=LR" : ""));
 
   // Write all the graph edges
 
   std::set<std::string> PingPongStatesWritten;
 
+  
   for (auto &Kvp : Map) {
     auto SourceStateName = Kvp.first;
     auto TransType = std::get<0>(Kvp.second);
     auto TargetStateName = std::get<1>(Kvp.second);
-
+    auto Label = std::get<2>(Kvp.second);
+    
     std::string Attributes = getAttributesForTransition(TransType);
 
-    // If source and target are ping-pong siblings, only write the first edge
-    // with attribute dir="both", which instructs GraphViz to make a
-    // double-ended edge between the two nodes
-    if (arePingPongSiblings(SourceStateName, TargetStateName)) {
-      if (PingPongStatesWritten.find(TargetStateName) !=
-          PingPongStatesWritten.end())
-        continue;
+    // // If source and target are ping-pong siblings, only write the first edge
+    // // with attribute dir="both", which instructs GraphViz to make a
+    // // double-ended edge between the two nodes
+    // if (arePingPongSiblings(SourceStateName, TargetStateName)) {
+    //   if (PingPongStatesWritten.find(TargetStateName) !=
+    //       PingPongStatesWritten.end())
+    // 	continue;
+      
+    //   PingPongStatesWritten.insert(TargetStateName);
+    //   Attributes += R"(, dir="both")";
+    //   auto transition = Map.find(TargetStateName);
+    //   Attributes += std::string(FormatString<>(" xlabel=%s ", std::get<2>(transition->second).c_str()));
+    // }
 
-      PingPongStatesWritten.insert(SourceStateName);
-
-      Attributes += R"(, dir="both")";
-    }
-
-    Result += FormatString<>(
-        "  %s -> %s [%s]\n", makeValidDotNodeName(SourceStateName).c_str(),
-        makeValidDotNodeName(TargetStateName).c_str(), Attributes.c_str());
+    Result += std::string(FormatString<>(
+        "  %s -> %s [%s fontsize=10 label=%s]\n", makeValidDotNodeName(SourceStateName).c_str(),
+        makeValidDotNodeName(TargetStateName).c_str(), Attributes.c_str(), Label.c_str()));
   }
   Result += '\n';
 
@@ -336,19 +338,19 @@ std::string generateDotFileContents(const StateTransitionMap &Map,
       // TODO: indent output for readability
       auto NamespaceParts = splitString(CurrNamespace, "::");
       for (auto Part : NamespaceParts) {
-        Result += FormatString<>(
+        Result += std::string(FormatString<>(
             "  subgraph cluster_%s { label = \"%s\"; labeljust=left;\n",
-            makeValidDotNodeName(Part).c_str(), Part.c_str());
+            makeValidDotNodeName(Part).c_str(), Part.c_str()));
       }
 
       // Write subgraphs for states of same depth
-      Result += FormatString<>("    subgraph {\n"
-                               "      rank=same // depth=%d\n",
-                               Depth);
+      Result += std::string(FormatString<>("    subgraph {\n"
+                               "     depth=%d\n",
+					   Depth));
 
       for (const auto &StateName : StateNames) {
-        std::string StateAttributes = FormatString<>(
-            R"(label="%s")", makeFriendlyName(StateName).c_str());
+        std::string StateAttributes = std::string(FormatString<>(
+								 R"(fontsize=20 label="%s")", makeFriendlyName(StateName).c_str()));
 
         static bool EnableColor = true;
         if (EnableColor) {
@@ -366,13 +368,13 @@ std::string generateDotFileContents(const StateTransitionMap &Map,
           float MaxV = 0.7f;
           float V = remap(Depth, MinDepth, MaxDepth, MinV, MaxV);
 
-          StateAttributes += FormatString<>(
-              R"(, fontcolor=white, style=filled, color="%f %f %f")", H, S, V);
+          StateAttributes += std::string(FormatString<>(
+							R"(, fontcolor=white, style=filled, color="%f %f %f")", H, S, V));
         }
 
-        Result += FormatString<>("      %s [%s]\n",
+        Result += std::string(FormatString<>("      %s [%s]\n",
                                  makeValidDotNodeName(StateName).c_str(),
-                                 StateAttributes.c_str());
+					     StateAttributes.c_str()));
       }
       Result += "    }\n";
 

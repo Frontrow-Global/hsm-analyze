@@ -17,4 +17,4 @@ static const char *TransitionTypeVisualString[] = {"--->", "==>>", "===>",
 
 // Multimap of source state name to (transition, target state name) tuples
 using StateTransitionMap =
-    std::multimap<std::string, std::tuple<TransitionType, std::string>>;
+  std::multimap<std::string, std::tuple<TransitionType, std::string, std::string>>;

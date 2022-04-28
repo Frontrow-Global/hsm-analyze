@@ -113,7 +113,16 @@ public:
     const TemplateArgument &TA = TSI->TemplateArguments->get(0);
 
     const auto TargetStateName = getName(TA);
+    clang::LangOptions LangOpts;
+    LangOpts.CPlusPlus = true;
+    clang::PrintingPolicy Policy(LangOpts);
 
+    std::string TypeS;
+    llvm::raw_string_ostream s(TypeS);
+    TransCallExpr->getArg(0)->printPretty(s, 0, Policy);
+    llvm::errs() << "arg: " << s.str() << "\n";    
+
+    const std::string label = s.str();
     // If our transition is a state arg, we get the top-most transition's
     // target state and assume that this target state is the one that will
     // return the current transition. To do this, we track the top-most
@@ -134,8 +143,7 @@ public:
       SourceStateName = iter->second;
     }
 
-    _StateTransitionMap.insert(std::make_pair(
-        SourceStateName, std::make_tuple(TransType, TargetStateName)));
+    _StateTransitionMap.insert(std::make_pair(SourceStateName, std::make_tuple(TransType, TargetStateName, label)));
   }
 };
 } // namespace

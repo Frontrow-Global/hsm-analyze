@@ -39,7 +39,7 @@ static void PrintVersion() {
 }
 
 int main(int argc, const char **argv) {
-  cl::AddExtraVersionPrinter(PrintVersion);
+  //  cl::AddExtraVersionPrinter(PrintVersion);
 
   CommonOptionsParser OptionsParser(argc, argv, HsmAnalyzeCategory,
                                     ToolDescription);
