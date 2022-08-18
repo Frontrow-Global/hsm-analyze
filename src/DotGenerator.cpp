@@ -10,6 +10,7 @@
 #include <set>
 #include <string>
 #include <vector>
+#include <limits>
 
 namespace {
 // TODO: move to StringHelpers

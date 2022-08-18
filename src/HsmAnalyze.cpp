@@ -40,12 +40,11 @@ static void PrintVersion() {
 
 int main(int argc, const char **argv) {
   //  cl::AddExtraVersionPrinter(PrintVersion);
-
-  CommonOptionsParser OptionsParser(argc, argv, HsmAnalyzeCategory,
+	llvm::Expected<clang::tooling::CommonOptionsParser> option = CommonOptionsParser::create(argc, argv, HsmAnalyzeCategory, llvm::cl::OneOrMore,
                                     ToolDescription);
+	auto files = option->getSourcePathList();
 
-  ClangTool Tool(OptionsParser.getCompilations(),
-                 OptionsParser.getSourcePathList());
+	clang::tooling::ClangTool tool(option->getCompilations(), files);
 
   if (!(PrintMap || PrintDotFile)) {
     llvm::errs() << "Nothing to do. Please specify "
@@ -58,7 +57,7 @@ int main(int argc, const char **argv) {
   MatchFinder Finder;
   HsmAstMatcher::addMatchers(Finder, Map);
 
-  auto Result = Tool.run(newFrontendActionFactory(&Finder).get());
+  auto Result = tool.run(newFrontendActionFactory(&Finder).get());
   if (Result != 0) {
     return Result;
   }
