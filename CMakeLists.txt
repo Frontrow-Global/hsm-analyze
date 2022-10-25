@@ -7,6 +7,8 @@ option(USE_STATIC_CRT
 option(USE_RELEASE_LIBS_IN_DEBUG
 	"Set to ON to link against release llvm/clang libs in Debug." OFF)
 
+set (CMAKE_CXX_STANDARD 17)
+
 if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
 	# DLL CRT by default
 	set(LLVM_USE_CRT_RELEASE "MD")
@@ -31,6 +33,10 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
 	add_definitions(/D_HAS_EXCEPTIONS=0)
 endif()
 
+Find_Package(LLVM REQUIRED CONFIG)
+message(STATUS "Found LLVM ${LLVM_PACKAGE_VERSION} in ${LLVM_INSTALL_PREFIX}")
+message(STATUS "Using LLVMConfig.cmake in: ${LLVM_DIR}")
+
 # Find ClangConfig.cmake which will find_package(LLVM)
 # On Windows: -DCMAKE_PREFIX_PATH="C:\Program Files\LLVM\lib\cmake\clang"
 find_package(Clang REQUIRED CONFIG)
@@ -45,6 +51,6 @@ include(HandleLLVMOptions)
 
 file(GLOB SRC "src/*.cpp" "src/*.h")
 add_executable(hsm-analyze ${SRC})
-
+install(TARGETS hsm-analyze DESTINATION bin)
 include_directories(${LLVM_INCLUDE_DIRS})
 target_link_libraries(hsm-analyze PRIVATE clangTooling)
